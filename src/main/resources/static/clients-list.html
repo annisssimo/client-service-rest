@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clients List</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<h1>Get client info</h1>
+<form id="getClientForm">
+    <label for="clientId">Client ID:</label>
+    <input type="number" id="clientId" name="clientId" required>
+    <button type="submit">Get info</button>
+</form>
+
+<div id="clientInfo"></div>
+
+<div id="allClients"></div>
+
+<script>
+    document.getElementById('getClientForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        document.getElementById('clientInfo').classList.remove('user-not-found');
+
+        var clientId = document.getElementById('clientId').value;
+        fetch('/rest/user/' + clientId)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error while getting client data');
+                }
+                return response.text(); // Получаем текстовый ответ
+            })
+            .then(text => {
+                // Проверяем, что текстовый ответ существует и не пустой
+                if (text && text.trim() !== '') {
+                    try {
+                        var data = JSON.parse(text);
+                        // Проверяем наличие данных перед отображением
+                        if (data && Object.keys(data).length > 0) {
+                            document.getElementById('clientInfo').innerHTML = formatClientInfo(data);
+                        }
+                    } catch (error) {
+                        throw new Error('Invalid data format');
+                    }
+                } else {
+                    const errorFindingClient = document.getElementById('clientInfo');
+                    errorFindingClient.innerHTML = 'Client with this ID not found';
+                    errorFindingClient.classList.add('user-not-found');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+    // Функция для форматирования информации о клиенте в более читаемый вид
+    function formatClientInfo(clientData) {
+        var formattedInfo = '<h2>Client Info</h2>';
+        for (var key in clientData) {
+            formattedInfo += '<p><strong>' + key + ':</strong> ' + clientData[key] + '</p>';
+        }
+        return formattedInfo;
+    }
+
+    // Функция для получения и отображения списка всех клиентов
+    function getAllClients() {
+        fetch('/rest/users')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error while getting clients list');
+                }
+                return response.json();
+            })
+            .then(clients => {
+                var clientList = '<h2>All Clients</h2><ul>';
+                clients.forEach(client => {
+                    clientList += '<li><strong>ID:</strong> ' + client.id + ', ';
+                    clientList += '<strong>Name:</strong> ' + client.lastName + ' ' + client.firstName + '</li>';
+                });
+                clientList += '</ul>';
+                document.getElementById('allClients').innerHTML = clientList;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Вызываем функцию для получения и отображения списка всех клиентов при загрузке страницы
+    getAllClients();
+</script>
+
+</body>
+</html>

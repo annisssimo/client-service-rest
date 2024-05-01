@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Client</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<h1>Update Client Data</h1>
+<form id="updateClientForm">
+    <label for="clientId">Client ID for Update:</label>
+    <input type="number" id="clientId" name="clientId" required><br>
+
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" name="firstName" required><br>
+
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" name="lastName" required><br>
+
+    <label for="middleName">Middle Name:</label>
+    <input type="text" id="middleName" name="middleName"><br>
+
+    <label for="birthDate">Birth Date:</label>
+    <input type="date" id="birthDate" name="birthDate" required><br>
+
+    <label>Gender:</label><br>
+    <input type="radio" id="male" name="gender" value="male" required>
+    <label for="male">Male</label><br>
+    <input type="radio" id="female" name="gender" value="female" required>
+    <label for="female">Female</label><br>
+
+    <label for="passportSeries">Passport Series:</label>
+    <input type="text" id="passportSeries" name="passportSeries" required><br>
+
+    <label for="passportNumberMasked">Passport Number:</label>
+    <input type="text" id="passportNumberMasked" name="passportNumberMasked" required><br>
+
+    <label for="issuedBy">Issued By:</label>
+    <input type="text" id="issuedBy" name="issuedBy" required><br>
+
+    <label for="issueDate">Issue Date:</label>
+    <input type="date" id="issueDate" name="issueDate" required><br>
+
+    <label for="identificationNumberMasked">Identification Number:</label>
+    <input type="text" id="identificationNumberMasked" name="identificationNumberMasked" required><br>
+
+    <label for="placeOfBirth">Place of Birth:</label>
+    <input type="text" id="placeOfBirth" name="placeOfBirth" required><br>
+
+    <label for="cityOfResidence">City of Residence:</label>
+    <select id="cityOfResidence" name="cityOfResidence">
+        <option value="Minsk">Minsk</option>
+        <option value="Moskow">Moskow</option>
+        <option value="Baranovichy">Baranovichy</option>
+        <option value="Krichev">Krichev</option>
+        <option value="London">London</option>
+    </select><br>
+
+    <label for="addressOfResidence">Address of Residence:</label>
+    <input type="text" id="addressOfResidence" name="addressOfResidence" required><br>
+
+    <label for="registeredAddress">Registered Address:</label>
+    <input type="text" id="registeredAddress" name="registeredAddress" required><br>
+
+    <label for="maritalStatus">Marital Status:</label>
+    <select id="maritalStatus" name="maritalStatus">
+        <option value="single">Single</option>
+        <option value="married">Married</option>
+        <option value="divorced">Divorced</option>
+        <option value="widowed">Widowed</option>
+    </select><br>
+
+    <label for="citizenship">Citizenship:</label>
+    <select id="citizenship" name="citizenship" required>
+        <option value="Belarus">Belarus</option>
+        <option value="Russia">Russia</option>
+        <option value="USA">USA</option>
+        <option value="Canada">Canada</option>
+        <option value="UK">UK</option>
+        <option value="Australia">Australia</option>
+        <option value="Germany">Germany</option>
+    </select><br>
+    <label for="disability">Disability:</label>
+    <select id="disability" name="disability">
+        <option value="none">None</option>
+        <option value="mild">Mild</option>
+        <option value="moderate">Moderate</option>
+        <option value="severe">Severe</option>
+    </select><br>
+
+    <label for="isPensioner">Pensioner:</label>
+    <input type="checkbox" id="isPensioner" name="isPensioner" value="true"> Yes<br>
+
+    <button type="submit">Update</button>
+</form>
+
+<div id="updateResponse"></div>
+
+<script>
+    document.getElementById('clientId').addEventListener('blur', function() {
+        var clientId = this.value;
+        fetch('/rest/user/' + clientId)
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Client ID not found. Please enter a valid ID.');
+                this.value = ''; // Очистка поля clientId
+            });
+    });
+    document.getElementById('updateClientForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        var clientId = document.getElementById('clientId').value;
+        var updateData = {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            middleName: document.getElementById('middleName').value,
+            birthDate: document.getElementById('birthDate').value,
+            gender: document.querySelector('input[name="gender"]:checked').value === 'male' ? true : false,
+            passportSeries: document.getElementById('passportSeries').value,
+            passportNumberMasked: document.getElementById('passportNumberMasked').value,
+            issuedBy: document.getElementById('issuedBy').value,
+            issueDate: document.getElementById('issueDate').value,
+            identificationNumberMasked: document.getElementById('identificationNumberMasked').value,
+            placeOfBirth: document.getElementById('placeOfBirth').value,
+            cityOfResidence: document.getElementById('cityOfResidence').value,
+            addressOfResidence: document.getElementById('addressOfResidence').value,
+            registeredAddress: document.getElementById('registeredAddress').value,
+            maritalStatus: document.getElementById('maritalStatus').value,
+            citizenship: document.getElementById('citizenship').value,
+            disability: document.getElementById('disability').value,
+            isPensioner: document.getElementById('isPensioner').checked
+        };
+
+        console.log(updateData)
+
+        fetch('/rest/user/' + clientId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('updateResponse').innerHTML = JSON.stringify(data);
+                document.getElementById('updateClientForm').reset();
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+</body>
+</html>
